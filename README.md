@@ -1,73 +1,61 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# QuickShop API Gateway Setup
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This guide will help you set up the QuickShop API Gateway. We'll install some dependencies, set up the project structure, and add scripts to generate protobuf files.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Installing Dependencies
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
+First, we need to install some dependencies. Run the following command in your terminal:
 
 ```bash
-$ npm install
+npm i @nestjs/microservices @grpc/grpc-js @grpc/proto-loader
+
+npm i -D @types/node ts-proto
 ```
 
-## Running the app
+## Project Structure
+
+Next, we'll create the final folder and file structure. We'll create a single module for simplicity. Run the following commands:
 
 ```bash
-# development
-$ npm run start
+nest g mo auth && nest g co auth --no-spec && nest g s auth --no-spec
 
-# watch mode
-$ npm run start:dev
+nest g mo product && nest g co product --no-spec
 
-# production mode
-$ npm run start:prod
+nest g mo order && nest g co order --no-spec
+
+touch src/auth/auth.guard.ts
 ```
 
-## Test
+## Adding Scripts
+
+We need to add some scripts to our `package.json` file to generate our protobuf files based on the shared proto project we just completed. Add the following lines of code inside the scripts property of our `package.json` file:
+
+Replace `YOUR_USERNAME` with your Github username.
+
+```json
+"proto:install": "npm i git+https://github.com/YOUR_USERNAME/quickshop-shared-proto.git",
+"proto:auth": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/quickshop-shared-proto/proto --ts_proto_out=src/auth/ node_modules/quickshop-shared-proto/proto/auth.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
+"proto:order": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/quickshop-shared-proto/proto --ts_proto_out=src/order/ node_modules/quickshop-shared-proto/proto/order.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
+"proto:product": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/quickshop-shared-proto/proto --ts_proto_out=src/product/ node_modules/quickshop-shared-proto/proto/product.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
+"proto:all": "npm run proto:auth && npm run proto:order && npm run proto:product"
+```
+
+## Install Protobuf Compiler (protoc)
+
+If you don't have protoc installed in your system, follow these steps:
+
+- For Linux: Use a package manager like `apt` or `yum`. For example: `sudo apt install protobuf-compiler`.
+- For macOS: Use Homebrew with `brew install protobuf`.
+- For Windows: Download the pre-built binaries from the [Protobuf GitHub Releases](https://github.com/protocolbuffers/protobuf/releases) page and add the executable to your PATH.
+
+Verify the installation by running `protoc --version` in your terminal. It should return the version of protoc.
+
+## Run the Scripts
+
+Finally, let's run these scripts:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run proto:install && npm run proto:all
 ```
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+This will install the shared proto project and generate the protobuf files.
