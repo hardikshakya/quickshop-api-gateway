@@ -43,6 +43,7 @@ export interface FindOneResponse {
 /** DecreaseStockRequest represents the required information to decrease the stock of a product */
 export interface DecreaseStockRequest {
   id: number;
+  orderId: number;
 }
 
 /** DecreaseStockResponse represents the response after decreasing the stock of a product */
